@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: skycore-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: skycore
+      POSTGRES_USER: skycore
+      POSTGRES_PASSWORD: skycore_dev_password
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
