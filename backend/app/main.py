@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+from sqlalchemy import text
 
-from app.core.database import Base, engine
-from app.models.telemetry import Telemetry
 from app.api.telemetry import router as telemetry_router
+from app.core.database import Base, SessionLocal, engine
+from app.models.telemetry import Telemetry
 
 
 # Create database tables
@@ -16,7 +17,6 @@ app = FastAPI(
 )
 
 
-# Register routers
 app.include_router(telemetry_router)
 
 
@@ -31,8 +31,22 @@ def root():
 
 @app.get("/api/health")
 def health_check():
+    database_status = "disconnected"
+
+    db = SessionLocal()
+
+    try:
+        db.execute(text("SELECT 1"))
+        database_status = "connected"
+
+    except Exception:
+        database_status = "disconnected"
+
+    finally:
+        db.close()
+
     return {
-        "status": "ok",
+        "status": "ok" if database_status == "connected" else "degraded",
         "service": "skycore-backend",
-        "database": "connected",
+        "database": database_status,
     }
